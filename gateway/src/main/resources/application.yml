@@ -1,0 +1,115 @@
+
+server:
+  port: 8088
+
+---
+
+spring:
+  profiles: default
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
+#<<< API Gateway / Routes
+      routes:
+        - id: reservation
+          uri: http://localhost:8082
+          predicates:
+            - Path=/reservations/**
+          filters:
+            - AuthorizationFilter
+             
+        - id: front
+          uri: http://localhost:8083
+          predicates:
+            - Path=/fronts/**
+          filters:
+            - AuthorizationFilter
+
+        - id: room
+          uri: http://localhost:8084
+          predicates:
+            - Path=/rooms/**
+          filters:
+            - AuthorizationFilter
+             
+        - id: payment
+          uri: http://localhost:8085
+          predicates:
+            - Path=/payments/**, 
+        - id: MyPage
+          uri: http://localhost:8086
+          predicates:
+            - Path=, 
+        - id: user
+          uri: http://localhost:8087
+          predicates:
+            - Path=/users/**,
+          # filters:
+          #   - AuthorizationFilter
+
+        - id: frontend
+          uri: http://localhost:8080
+          predicates:
+            - Path=/**
+#>>> API Gateway / Routes
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "*"
+            allowedMethods:
+              - "*"
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+
+
+---
+
+spring:
+  profiles: docker
+  cloud:
+    gateway:
+      routes:
+        - id: reservation
+          uri: http://reservation:8080
+          predicates:
+            - Path=/reservations/**, 
+        - id: front
+          uri: http://front:8080
+          predicates:
+            - Path=/fronts/**, 
+        - id: room
+          uri: http://room:8080
+          predicates:
+            - Path=/rooms/**, 
+        - id: payment
+          uri: http://payment:8080
+          predicates:
+            - Path=/payments/**, 
+        - id: MyPage
+          uri: http://myPage:8080
+          predicates:
+            - Path=, 
+        - id: user
+          uri: http://user:8080
+          predicates:
+            - Path=/users/**, 
+        - id: frontend
+          uri: http://frontend:8080
+          predicates:
+            - Path=/**
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "*"
+            allowedMethods:
+              - "*"
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+
+server:
+  port: 8080
