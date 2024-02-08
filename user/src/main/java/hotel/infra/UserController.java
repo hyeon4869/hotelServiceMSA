@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import hotel.auth.JwtAuthenticationFilter;
+import hotel.auth.PrincipalDetails;
 import hotel.domain.SignedUp;
 import hotel.domain.User;
 import hotel.domain.UserRepository;
@@ -29,6 +31,7 @@ public class UserController {
 
     
     private final UserRepository userRepository;
+    
     @PostMapping("/users/register")
     public ResponseEntity<User> register(@RequestBody SignedUp signedUp){
 
@@ -37,6 +40,29 @@ public class UserController {
         user.register(signedUp);
         userRepository.save(user);
         return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/users/{username}/refreshToken")
+    public ResponseEntity<String> getRefresh(@PathVariable String username){
+        User user = userRepository.findByUsername(username).get();
+        String token = user.getRefreshToken();
+        return ResponseEntity.ok(token);
+    }
+
+    @PostMapping("/users/token/refresh")
+    public ResponseEntity<String> createToken(@RequestBody String refreshToken){
+        Optional<User> optionalUser = userRepository.findByRefreshToken(refreshToken);
+        if(optionalUser.isPresent()){
+            User user = optionalUser.get();
+            //사용자 인증 정보 클래스 객체 생성
+            PrincipalDetails principalDetails = new PrincipalDetails(user);
+            //accessToken 발급
+            String newAccessToken = JwtAuthenticationFilter.createAccessToken(principalDetails);
+            return ResponseEntity.ok(newAccessToken);
+        } else{
+            return ResponseEntity.ok("refresh Token 불일치");
+        }
+        
     }
 }
 //>>> Clean Arch / Inbound Adaptor

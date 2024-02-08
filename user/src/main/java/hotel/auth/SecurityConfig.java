@@ -17,17 +17,16 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter{
+   
     private final UserRepository userRepository;
 
-    @Autowired
-    public SecurityConfig(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
     private String jwtSecret=JwtProperties.SECRET;
 
     //BCrypt 암호화를 사용하기 위한 메소드
@@ -56,7 +55,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
             .and()
             // httpBasic 방식 비활성화
             .httpBasic().disable()
-            .addFilter(new JwtAuthenticationFilter(authenticationManager(), userRepository))
+            .addFilter(new JwtAuthenticationFilter(authenticationManager(), userRepository))//생성자 
             .exceptionHandling()
                 .authenticationEntryPoint(authenticationEntryPoint())
                 .accessDeniedHandler(accessDeniedHandler())

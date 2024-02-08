@@ -10,4 +10,6 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 public interface UserRepository
     extends PagingAndSortingRepository<User, Long> {
 
-   Optional<User> findByUsername(String username);}
+   Optional<User> findByUsername(String username);
+
+Optional<User> findByRefreshToken(String refreshToken);}

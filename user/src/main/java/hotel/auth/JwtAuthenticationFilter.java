@@ -32,10 +32,10 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Autowired
     private AuthenticationManager authenticationManager;
 
-
+    
     private final UserRepository userRepository;
 
-    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, UserRepository userRepository) {
+    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, UserRepository userRepository) {//생성자, 필터는 bean이 아니기 때문에 외부 bean을 사용하려면 생성자 주입으로 사용
         this.authenticationManager = authenticationManager;
         this.userRepository=userRepository;
         // 로그인 주소를 변경합니다.
@@ -51,6 +51,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             User user = om.readValue(request.getInputStream(), User.class);
             System.out.println(user);
 
+            
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                     user.getUsername(), user.getPassword());
 
@@ -74,56 +75,44 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         PrincipalDetails principalDetails = (PrincipalDetails) authResult.getPrincipal();
 
-        // access 토큰 발급
-        String accessToken = JWT.create()
-                .withSubject(JwtProperties.TOKENNAME)// 토큰 이름
-                .withExpiresAt(Date.from(Instant.now().plus(10, ChronoUnit.MINUTES))) // 토큰 만료 시간
-                .withClaim("id", principalDetails.getUser().getId())
-                .withClaim("username", principalDetails.getUser().getUsername())
-                .withClaim("roles", principalDetails.getAuthorities().stream()
-                        .map(GrantedAuthority::getAuthority)
-                        .map(role -> role.trim())
-                        .collect(Collectors.toList())) // 권한 정보 추가
-                .sign(Algorithm.HMAC512(JwtProperties.SECRET));
+     // access 토큰 발급
+        String accessToken = createAccessToken(principalDetails);
 
         // refresh 토큰 발급
         String refreshToken = JWT.create()
-                .withSubject(JwtProperties.TOKENNAME) // 리프레시 토큰 이름
-                .withExpiresAt(Date.from(Instant.now().plus(10080, ChronoUnit.MINUTES))) // 리프레시 토큰 만료 시간
-                .withClaim("id", principalDetails.getUser().getId())
-                .withClaim("username", principalDetails.getUser().getUsername())
-                .sign(Algorithm.HMAC512(JwtProperties.SECRET));
+            .withSubject(JwtProperties.TOKENNAME)
+            .withExpiresAt(Date.from(Instant.now().plus(10080, ChronoUnit.MINUTES)))
+            .withClaim("id", principalDetails.getUser().getId())
+            .withClaim("username", principalDetails.getUser().getUsername())
+            .sign(Algorithm.HMAC512(JwtProperties.SECRET));
 
         // 리프레시 토큰으로 사용자 업데이트
-        try {
-            if (principalDetails != null && principalDetails.getUser() != null && userRepository != null) {
-                Optional<User> optionalUser = userRepository.findByUsername(principalDetails.getUser().getUsername());
-                optionalUser.ifPresent(user -> {
-                    user.setRefreshToken(refreshToken);
-                    userRepository.save(user);
-                });
-            } else {
-                // userRepository 또는 principalDetails가 null인 경우 로그 출력
-                System.out.println("userRepository or principalDetails is null");
-            }
-        } catch (Exception e) {
-            // 예외 처리
-            e.printStackTrace();
-        }
+        Optional<User> optionalUser = userRepository.findByUsername(principalDetails.getUser().getUsername());
+        optionalUser.ifPresent(user -> {
+            user.setRefreshToken(refreshToken);
+            userRepository.save(user);
+        });
 
         // 헤더에 토큰 추가
         response.addHeader(JwtProperties.HEADER_STRING, JwtProperties.TOKEN_PREFIX + accessToken);
-        response.setHeader("Access-Control-Expose-Headers",
-                JwtProperties.HEADER_STRING);
-
-        // 유저네임, 패스워드가 정상이면 jwt 토큰을 생성하고
-        // 클라이언트 쪽으로 JWT토큰을 응답
-        // 요청할 때마다 JWT토큰을 가지고 요청하며
-        // 서버는 JWT토큰이 유효한지를 판단(필터를 만들어야함)
-        System.out.println(accessToken);
-        System.out.println("리프레쉬 토큰 ===========================================" + refreshToken);
+        response.setHeader("Access-Control-Expose-Headers", JwtProperties.HEADER_STRING);
     }
 
+    // access 토큰 생성 메소드
+    public static String createAccessToken(PrincipalDetails principalDetails) {
+        String accessToken = JWT.create()
+            .withSubject(JwtProperties.TOKENNAME)
+            .withExpiresAt(Date.from(Instant.now().plus(1, ChronoUnit.MINUTES)))
+            .withClaim("id", principalDetails.getUser().getId())
+            .withClaim("username", principalDetails.getUser().getUsername())
+            .withClaim("roles", principalDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .map(String::trim)
+                .collect(Collectors.toList()))
+            .sign(Algorithm.HMAC512(JwtProperties.SECRET));
+            
+        return accessToken;
+    }
 }
 // setHeader를 사용하면
 // 기존에 설정된 Access-Control-Expose-Headers 헤더를 덮어쓰게 되므로,
