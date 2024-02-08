@@ -12,12 +12,16 @@ import javax.persistence.*;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "User_table")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 // <<< DDD / Aggregate Root
 public class User {
 
@@ -32,6 +36,8 @@ public class User {
     private String name;
 
     private String roles;
+    
+    private String refreshToken;
 
     public List<String> getRoleList() {
         if (this.roles.length() > 0) {

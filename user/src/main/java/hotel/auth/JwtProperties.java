@@ -7,4 +7,5 @@ public interface JwtProperties {
     String HEADER_STRING = "Authorization";
     int TIME=550;// 540이 현재시간 그 이후로 1당 1분
     String TOKENNAME = "COS토큰";
+
 }
