@@ -56,8 +56,8 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 
             JWT.require(Algorithm.HMAC512(jwtSecret.getBytes()))
                     .build()
-                    .verify(token)
-                    .getClaims();
+                    .verify(token)//검증 
+                    .getClaims();//검증된 토큰의 claims를 가져옴
 
             return false;
         } catch (TokenExpiredException e) {
@@ -67,19 +67,21 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
         }
     }
 
+    //리프레쉬 토큰 알아내기 위한 것
     private String getRefreshToken(String username) {
-        WebClient webClient = WebClient.create("http://localhost:8088");
+        WebClient webClient = WebClient.create("http://localhost:8088");//요청 주소
         String refreshToken = webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/users/{username}/refreshToken")
-                        .build(username))
+                .uri("/users/{username}/refreshToken", username) //상세 주소, 
                 .retrieve()
-                .bodyToMono(String.class)
-                .block();
-
+                .bodyToMono(String.class)//비동기적인 응답을 위한 것, 본문을 mono로 변환하고 이를 통해 비동기적으로 데이터를 가져옴
+                //모노의 타입을 String으로 지정
+                //String으로 지정하지 않으면 타입이 맞지 않아서 컴파일 오류
+                .block();//비동기적인 작업이 완료될 때 까지 기다림
+    
         return refreshToken;
     }
-
+    
+    //새로운 엑세스 토큰 발급을 위한 것
     private String requestNewToken(String refreshToken) {
         WebClient webClient = WebClient.create("http://localhost:8088");
         String newToken = webClient.post()
@@ -88,10 +90,14 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();
-
+    
         return newToken;
     }
-
+    
+    // 리액티브 프로그래밍 라이브러리의 핵심 타입 중 하나입니다
+    //Mono: Mono는 0 또는 1개의 항목을 가지는 리액티브 스트림입니다. 즉, 단일 값을 표현합니다.
+    // Mono는 비동기적인 작업의 결과를 나타낼 때 주로 사용됩니다. 
+    //예를 들어, 파일에서 데이터를 읽거나 원격 서비스에서 데이터를 가져오는 등의 작업에서 Mono를 사용할 수 있습니다.
     public static class Config {
     }
 }
