@@ -1,7 +1,5 @@
 package hotel.infra;
 
-
-
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -9,8 +7,6 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import hotel.auth.JwtAuthenticationFilter;
 import hotel.auth.PrincipalDetails;
@@ -29,12 +25,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserController {
 
-    
     private final UserRepository userRepository;
-    
-    @PostMapping("/users/register")
-    public ResponseEntity<User> register(@RequestBody SignedUp signedUp){
 
+    @PostMapping("/users/register")
+    public ResponseEntity<User> register(@RequestBody SignedUp signedUp) {
 
         User user = new User();
         user.register(signedUp);
@@ -43,26 +37,26 @@ public class UserController {
     }
 
     @GetMapping("/users/{username}/refreshToken")
-    public ResponseEntity<String> getRefresh(@PathVariable String username){
+    public ResponseEntity<String> getRefresh(@PathVariable String username) {
         User user = userRepository.findByUsername(username).get();
         String token = user.getRefreshToken();
         return ResponseEntity.ok(token);
     }
 
     @PostMapping("/users/token/refresh")
-    public ResponseEntity<String> createToken(@RequestBody String refreshToken){
+    public ResponseEntity<String> createToken(@RequestBody String refreshToken) {
         Optional<User> optionalUser = userRepository.findByRefreshToken(refreshToken);
-        if(optionalUser.isPresent()){
+        if (optionalUser.isPresent()) {
             User user = optionalUser.get();
-            //사용자 인증 정보 클래스 객체 생성
+            // 사용자 인증 정보 클래스 객체 생성
             PrincipalDetails principalDetails = new PrincipalDetails(user);
-            //accessToken 발급
+            // accessToken 발급
             String newAccessToken = JwtAuthenticationFilter.createAccessToken(principalDetails);
             return ResponseEntity.ok(newAccessToken);
-        } else{
+        } else {
             return ResponseEntity.ok("refresh Token 불일치");
         }
-        
+
     }
 }
-//>>> Clean Arch / Inbound Adaptor
+// >>> Clean Arch / Inbound Adaptor
