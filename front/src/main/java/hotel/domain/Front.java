@@ -9,11 +9,13 @@ import java.util.Date;
 import java.util.List;
 import javax.persistence.*;
 import lombok.Data;
+import org.apache.catalina.core.ApplicationContext;
 
 @Entity
 @Table(name = "Front_table")
 @Data
-//<<< DDD / Aggregate Root
+
+// <<< DDD / Aggregate Root
 public class Front {
 
     @Id
@@ -38,108 +40,103 @@ public class Front {
 
     @PostPersist
     public void onPostPersist() {
-        ReservationAccepted reservationAccepted = new ReservationAccepted(this);
-        reservationAccepted.publishAfterCommit();
-
-        FrontCancelled frontCancelled = new FrontCancelled(this);
-        frontCancelled.publishAfterCommit();
-
-        PayUpdated payUpdated = new PayUpdated(this);
-        payUpdated.publishAfterCommit();
+        // ReservationAccepted reservationAccepted = new ReservationAccepted(this);
+        // reservationAccepted.publishAfterCommit();
+        //
+        // FrontCancelled frontCancelled = new FrontCancelled(this);
+        // frontCancelled.publishAfterCommit();
+        //
+        // PayUpdated payUpdated = new PayUpdated(this);
+        // payUpdated.publishAfterCommit();
     }
 
     public static FrontRepository repository() {
         FrontRepository frontRepository = FrontApplication.applicationContext.getBean(
-            FrontRepository.class
-        );
+                FrontRepository.class);
         return frontRepository;
     }
 
-    //<<< Clean Arch / Port Method
+    // <<< Clean Arch / Port Method
     public static void reservationAccept(
-        ReservationCreated reservationCreated
-    ) {
-        //implement business logic here:
+            ReservationCreated reservationCreated) {
+        // implement business logic here:
 
-        /** Example 1:  new item 
+        /** Example 1: new item */
         Front front = new Front();
+        front.setReservationId(String.valueOf(reservationCreated.getId()));
+        front.setStatus("예약 등록 요청");
+        front.setCheckOutDate(reservationCreated.getCheckOutDate());
+        front.setCheckInDate(reservationCreated.getCheckInDate());
+        front.setRoomNumber(reservationCreated.getRoomNumber());
+        front.setRoomType(reservationCreated.getRoomType());
+        front.setCustomerId(reservationCreated.getCustomerId());
+        front.setRoomId(reservationCreated.getRoomId());
         repository().save(front);
 
         ReservationAccepted reservationAccepted = new ReservationAccepted(front);
         reservationAccepted.publishAfterCommit();
-        */
 
-        /** Example 2:  finding and process
-        
-        repository().findById(reservationCreated.get???()).ifPresent(front->{
-            
-            front // do something
-            repository().save(front);
-
-            ReservationAccepted reservationAccepted = new ReservationAccepted(front);
-            reservationAccepted.publishAfterCommit();
-
-         });
-        */
+        /**
+         * Example 2: finding and process
+         * 
+         * repository().findById(reservationCreated.get???()).ifPresent(front->{
+         * 
+         * front // do something
+         * repository().save(front);
+         * 
+         * ReservationAccepted reservationAccepted = new ReservationAccepted(front);
+         * reservationAccepted.publishAfterCommit();
+         * 
+         * });
+         */
 
     }
 
-    //>>> Clean Arch / Port Method
-    //<<< Clean Arch / Port Method
+    // >>> Clean Arch / Port Method
+    // <<< Clean Arch / Port Method
     public static void reservationCancel(PayCancelled payCancelled) {
-        //implement business logic here:
+        // implement business logic here:
 
-        /** Example 1:  new item 
-        Front front = new Front();
-        repository().save(front);
+        /**
+         * Example 1: new item
+         * Front front = new Front();
+         * repository().save(front);
+         * 
+         * FrontCancelled frontCancelled = new FrontCancelled(front);
+         * frontCancelled.publishAfterCommit();
+         */
 
-        FrontCancelled frontCancelled = new FrontCancelled(front);
-        frontCancelled.publishAfterCommit();
-        */
+        /** Example 2: finding and process */
 
-        /** Example 2:  finding and process
-        
-        repository().findById(payCancelled.get???()).ifPresent(front->{
-            
-            front // do something
+        repository().findByRoomId(payCancelled.getRoomId()).ifPresent(front -> {
+
+            front.setStatus("예약 취소 완료"); // do something
             repository().save(front);
 
             FrontCancelled frontCancelled = new FrontCancelled(front);
             frontCancelled.publishAfterCommit();
 
-         });
-        */
+        });
 
     }
 
-    //>>> Clean Arch / Port Method
-    //<<< Clean Arch / Port Method
+    // >>> Clean Arch / Port Method
+    // <<< Clean Arch / Port Method
     public static void payUpdate(Paid paid) {
-        //implement business logic here:
+        // implement business logic here:
 
-        /** Example 1:  new item 
-        Front front = new Front();
-        repository().save(front);
+        repository().findByRoomId(paid.getRoomId()).ifPresent(front -> {
 
-        PayUpdated payUpdated = new PayUpdated(front);
-        payUpdated.publishAfterCommit();
-        */
-
-        /** Example 2:  finding and process
-        
-        repository().findById(paid.get???()).ifPresent(front->{
-            
-            front // do something
+            front.setStatus("예약 완료"); // do something
             repository().save(front);
 
             PayUpdated payUpdated = new PayUpdated(front);
             payUpdated.publishAfterCommit();
 
-         });
-        */
+        });
 
     }
-    //>>> Clean Arch / Port Method
+    // >>> Clean Arch / Port Method
 
 }
-//>>> DDD / Aggregate Root
+// >>> DDD / Aggregate Root

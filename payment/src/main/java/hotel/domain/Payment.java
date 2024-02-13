@@ -2,9 +2,14 @@ package hotel.domain;
 
 import hotel.PaymentApplication;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.*;
+
+import hotel.external.Room;
+import hotel.external.RoomService;
 import lombok.Data;
 
 @Entity
@@ -35,19 +40,12 @@ public class Payment {
 
     private String roomId;
 
+    private String impuid;
+    private String payStatus;
+
+
     @PostPersist
-    public void onPostPersist() {
-        // Get request from Payment
-        //hotel.external.Payment payment =
-        //    Application.applicationContext.getBean(hotel.external.PaymentService.class)
-        //    .getPayment(/** mapping value needed */);
-
-        // Get request from Payment
-        //hotel.external.Payment payment =
-        //    Application.applicationContext.getBean(hotel.external.PaymentService.class)
-        //    .getPayment(/** mapping value needed */);
-
-    }
+    public void onPostPersist() {}
 
     public static PaymentRepository repository() {
         PaymentRepository paymentRepository = PaymentApplication.applicationContext.getBean(
@@ -58,9 +56,13 @@ public class Payment {
 
     //<<< Clean Arch / Port Method
     public void paySuccess(PaySuccessCommand paySuccessCommand) {
-        //implement business logic here:
 
+
+        //implement business logic here:
         Paid paid = new Paid(this);
+        setPrice(paid.getPrice());
+        setStatus("결제 완료");
+
         paid.publishAfterCommit();
     }
 
@@ -69,7 +71,10 @@ public class Payment {
     public void payCancel(PayCancelCommand payCancelCommand) {
         //implement business logic here:
 
+
         PayCancelled payCancelled = new PayCancelled(this);
+        setStatus("결제 취소");
+        setPrice(payCancelled.getPrice());
         payCancelled.publishAfterCommit();
     }
 
@@ -79,11 +84,20 @@ public class Payment {
     public static void pay(ReservationCreated reservationCreated) {
         //implement business logic here:
 
-        /** Example 1:  new item 
+        /** Example 1:  new item*/
         Payment payment = new Payment();
+        payment.setId(reservationCreated.getId());
+        payment.setPrice(reservationCreated.getTotalAmount());
+        payment.setCustomerId(reservationCreated.getCustomerId());
+        payment.setReservationId(String.valueOf(reservationCreated.getId()));
+        payment.setStatus("결제 요청");
+        payment.setRoomId(reservationCreated.getRoomId());
+        payment.setCustomerId(reservationCreated.getCustomerId());
+        payment.setRoomNumber(reservationCreated.getRoomNumber());
+        payment.setRoomType(reservationCreated.getRoomType());
+        payment.setCheckInDate(reservationCreated.getCheckInDate());
+        payment.setCheckOutDate(reservationCreated.getCheckOutDate());
         repository().save(payment);
-
-        */
 
         /** Example 2:  finding and process
         
@@ -97,31 +111,23 @@ public class Payment {
         */
 
     }
-
     //>>> Clean Arch / Port Method
-    //<<< Clean Arch / Port Method
+
     public static void payReject(ReservationCancelled reservationCancelled) {
         //implement business logic here:
 
-        /** Example 1:  new item 
-        Payment payment = new Payment();
-        repository().save(payment);
+        /** Example 2:  finding and process */
 
-        */
+         repository().findById(Long.valueOf(reservationCancelled.getRoomId())).ifPresent(payment->{
 
-        /** Example 2:  finding and process
-        
-        repository().findById(reservationCancelled.get???()).ifPresent(payment->{
-            
-            payment // do something
-            repository().save(payment);
+         payment.setStatus("결제 취소 요청"); // do something
+         repository().save(payment);
 
 
          });
-        */
+
 
     }
-    //>>> Clean Arch / Port Method
 
 }
 //>>> DDD / Aggregate Root

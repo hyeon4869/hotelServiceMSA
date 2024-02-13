@@ -46,9 +46,8 @@ logging:
     org.springframework.cloud: debug
 
 api:
-  url: 
-    payment: localhost:8085 
-    
+  url:
+    room: localhost:8084
 
 server:
   port: 8085
@@ -85,8 +84,4 @@ spring:
           destination: hotel
           contentType: application/json
 
-api:
-  url: 
-    payment: payment:8080 
-    
 

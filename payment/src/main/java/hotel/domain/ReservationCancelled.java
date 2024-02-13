@@ -1,10 +1,12 @@
 package hotel.domain;
 
-import hotel.domain.*;
 import hotel.infra.AbstractEvent;
-import java.util.*;
-import lombok.*;
+import lombok.Data;
+import lombok.ToString;
 
+import java.util.Date;
+
+//<<< DDD / Domain Event
 @Data
 @ToString
 public class ReservationCancelled extends AbstractEvent {
@@ -18,4 +20,7 @@ public class ReservationCancelled extends AbstractEvent {
     private Date checkOutDate;
     private String roomType;
     private String roomId;
+
+
 }
+//>>> DDD / Domain Event

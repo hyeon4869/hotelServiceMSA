@@ -6,8 +6,8 @@ public interface JwtProperties {
     int AJ_TIME=10;// jwt
     int RT_TIME=10080;
     String TOKENNAME = "COS토큰";
-    String TSECRET = "mcos"; //개발용 시크릿1
-    String SECRET = System.getenv("SECRET"); // 시크릿 2
+    String SECRET = "mcos"; //개발용 시크릿1
+    //String SECRET = System.getenv("SECRET"); // 시크릿 2
 
 
 }

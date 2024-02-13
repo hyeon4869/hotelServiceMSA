@@ -13,7 +13,7 @@ public class CorsConfiguration implements WebFluxConfigurer {
                 .allowedOrigins("*")
                 .allowedMethods("*")
                 .allowedHeaders("*")
-                .exposedHeaders("newauthorization")  // 이 부분 추가
+                .exposedHeaders("Authorization")  // 이 부분 추가
                 .allowCredentials(true);
                 
 

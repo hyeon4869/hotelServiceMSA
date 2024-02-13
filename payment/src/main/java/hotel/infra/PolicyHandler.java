@@ -39,16 +39,17 @@ public class PolicyHandler {
         Payment.pay(event);
     }
 
+
     @StreamListener(
-        value = KafkaProcessor.INPUT,
-        condition = "headers['type']=='ReservationCancelled'"
+            value = KafkaProcessor.INPUT,
+            condition = "headers['type']=='ReservationCancelled'"
     )
-    public void wheneverReservationCancelled_PayReject(
-        @Payload ReservationCancelled reservationCancelled
+    public void wheneverReservationCancelled_Pay(
+            @Payload ReservationCancelled reservationCancelled
     ) {
         ReservationCancelled event = reservationCancelled;
         System.out.println(
-            "\n\n##### listener PayReject : " + reservationCancelled + "\n\n"
+                "\n\n##### listener Pay : " + reservationCancelled + "\n\n"
         );
 
         // Sample Logic //
