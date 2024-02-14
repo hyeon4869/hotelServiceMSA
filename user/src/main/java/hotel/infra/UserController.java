@@ -31,7 +31,6 @@ public class UserController {
 
     private final UserRepository userRepository;
 
-    @CacheEvict(value = "user", allEntries = true)
     @PostMapping("/users/register")
     public ResponseEntity<User> register(@RequestBody SignedUp signedUp) {
 

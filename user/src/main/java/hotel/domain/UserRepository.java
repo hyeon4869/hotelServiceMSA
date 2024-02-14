@@ -11,9 +11,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 public interface UserRepository
         extends PagingAndSortingRepository<User, Long> {
 
-    @Cacheable(value = "user", key = "#username")
     Optional<User> findByUsername(String username);
 
-    @Cacheable(value = "user", key = "#username")
     Optional<User> findByRefreshToken(String refreshToken);
 }

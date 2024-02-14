@@ -4,10 +4,6 @@ server:
 spring:
   application:
     name: user
-  cache:
-    cache-names: user
-    caffeine:
-      spec: maximumSize=500,expireAfterAccess=600s
 
 ---
 

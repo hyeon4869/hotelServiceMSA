@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.Claim;
+import com.auth0.jwt.interfaces.DecodedJWT;
 
 import reactor.core.publisher.Mono;
 
@@ -34,6 +35,7 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
             String authorizationHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
 
             if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+                System.out.println("============================================================================ 토큰을 다시 확인할 것 ");
                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                 return exchange.getResponse().setComplete();
             }
@@ -41,20 +43,10 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
             String token = authorizationHeader.substring(7);
 
             if (isTokenExpired(token)) {
-                String payload = token.split("\\.")[1]; // .을 기준으로 페이로드를 추출
-                String json = new String(Base64.getDecoder().decode(payload));// 페이로드는 base64로 인코딩 되어 있어서 base64로 디코딩
-                String username = new JSONObject(json).getString("username");// json형태로 저장되어 있기에 json으로 추출
 
-                // DecodedJWT decodedJWT = JWT.decode(token); 
-                // String username = decodedJWT.getClaim("username").asString();
+                DecodedJWT decodedJWT = JWT.decode(token); 
+                String username = decodedJWT.getClaim("username").asString();
 
-                //decodedJWT로 가져오는 값들
-                // 토큰의 헤더 가져오기
-                // String header = decodedJWT.getHeader();
-                // 토큰의 페이로드 가져오기
-                // String payload = decodedJWT.getPayload();
-                // username claim의 값 가져오기
-                // String username = decodedJWT.getClaim("username").asString();
 
                 return getRefreshToken(username)
                     .flatMap(this::requestNewToken)
@@ -92,6 +84,7 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
     }
 
     private Mono<String> requestNewToken(String refreshToken) {
+        System.out.println("재발급 요청");
         return webClient.post()
                 .uri("/users/token/refresh")
                 .body(BodyInserters.fromValue(refreshToken))
