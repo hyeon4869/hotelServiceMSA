@@ -5,6 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +31,7 @@ public class UserController {
 
     private final UserRepository userRepository;
 
+    @CacheEvict(value = "user", allEntries = true)
     @PostMapping("/users/register")
     public ResponseEntity<User> register(@RequestBody SignedUp signedUp) {
 
