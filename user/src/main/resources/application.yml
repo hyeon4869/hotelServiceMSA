@@ -4,7 +4,11 @@ server:
 spring:
   application:
     name: user
-
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'metrics'
 ---
 
 spring:
@@ -49,7 +53,11 @@ logging:
 
 server:
   port: 8087
-
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'metrics'
 ---
 
 spring:

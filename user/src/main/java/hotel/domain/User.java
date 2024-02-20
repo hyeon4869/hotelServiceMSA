@@ -11,6 +11,7 @@ import java.util.List;
 import javax.persistence.*;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -61,11 +62,10 @@ public class User {
         return userRepository;
     }
 
+
     public void register(SignedUp signedUp) {
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        String hashPassword = passwordEncoder.encode(signedUp.getPassword());
         setUsername(signedUp.getUsername());
-        setPassword(hashPassword);
+        setPassword(signedUp.getPassword());
         setName(signedUp.getName());
         setRoles("ROLE_USER");
         setName(signedUp.getName());

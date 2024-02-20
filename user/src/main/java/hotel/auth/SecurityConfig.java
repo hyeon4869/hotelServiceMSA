@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties.Jwt;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -52,27 +53,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
             .httpBasic().disable()
             .addFilter(new JwtAuthenticationFilter(authenticationManager(), userRepository))//생성자 
             .exceptionHandling()
-                .authenticationEntryPoint(authenticationEntryPoint())
-                .accessDeniedHandler(accessDeniedHandler())
             .and()
             .authorizeRequests()
             .anyRequest().permitAll();
             }
-
-
-     // 인증 실패 핸들러 설정
-    private AuthenticationEntryPoint authenticationEntryPoint() {
-        return (request, response, authException) -> {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "사용할 권한이 없습니다.");
-        };
-    }
-
-    // 권한 없음 핸들러 설정
-    private AccessDeniedHandler accessDeniedHandler() {
-        return (request, response, accessDeniedException) -> {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.getWriter().write("권한이 없다.");
-        };
-    }
     
 }
